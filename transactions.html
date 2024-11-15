@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('{{ url_for('static', filename='images/office.jpg') }}');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: 'Arial', sans-serif;
+            padding-top: 50px;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card-header {
+            background-color: transparent;
+            color: black;
+        }
+
+        .btn-primary {
+            background-color: #000000;
+            color: white;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <a href="{{ url_for('admin_profile') }}" class="btn btn-secondary back-link">Back to Profile</a>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Transactions</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for transaction in transactions %}
+                        <li class="list-group-item">
+                            {{ transaction.timestamp }} - Cashier: {{ transaction.cashier }}
+                            <!-- Removed Customer and Ticket Number -->
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
