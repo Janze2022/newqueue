@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('{{ url_for('static', filename='images/office.jpg') }}');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+
+        .navbar {
+            background-color: #343a40;
+        }
+
+        .navbar-brand, .navbar-nav .nav-link {
+            color: white !important;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #f8f9fa !important;
+        }
+
+        .card {
+            width: 600px;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 80px;
+        }
+
+        .card-header {
+            background-color: transparent;
+            color: black;
+            text-align: center;
+            font-size: 1.75rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .list-group-item {
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .list-group-item-warning {
+            background-color: rgba(255, 235, 59, 0.8);
+        }
+
+        .list-group-item-info {
+            background-color: rgba(33, 150, 243, 0.8);
+        }
+
+        .btn-primary, .btn-info {
+            background-color: transparent;
+            color: black;
+            border: 2px solid black;
+        }
+
+        .btn-primary:hover, .btn-info:hover {
+            background-color: black;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            color: #333;
+        }
+
+        .flash-message {
+            margin-top: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <a class="navbar-brand" href="{{ url_for('home') }}">Queue System</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                </li>
+                {% if 'admin' not in request.cookies %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_login') }}">Login as Admin</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row justify-content-center mt-5 pt-5">
+            <div class="col-lg-8 col-md-10">
+                <div class="card">
+                    <div class="card-header">
+                        Queue System Dashboard
+                    </div>
+                    <div class="card-body">
+                        <!-- Flash messages for success or error -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        <div class="flash-message">
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} d-flex align-items-center mb-3">
+                                <i class="fas fa-info-circle me-2"></i>{{ message }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+
+                        <!-- Currently Serving -->
+                        <h2>Currently Serving</h2>
+                        {% if current_ticket %}
+                        <div class="alert alert-info">
+                            <strong>Ticket #{{ current_ticket.id }}</strong><br>
+                            {% if current_ticket.customer_name %}
+                            Customer: {{ current_ticket.customer_name }}<br>
+                            {% endif %}
+                            {% if current_ticket.cashier_name %}
+                            Cashier: {{ current_ticket.cashier_name }}
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            No ticket is being served currently.
+                        </div>
+                        {% endif %}
+
+                        <!-- Current Queue (Hide "done" tickets) -->
+                        <h2>Current Queue</h2>
+                        <ul class="list-group">
+                            {% for ticket in queue %}
+                            {% if ticket.status != 'done' %} <!-- Hide 'done' tickets -->
+                            <li class="list-group-item {% if ticket.status == 'serving' %}list-group-item-info{% elif ticket.status == 'waiting' %}list-group-item-warning{% endif %}">
+                                <strong>Ticket #{{ ticket.id }}</strong>
+                                {% if ticket.customer_name %}
+                                - Customer: {{ ticket.customer_name }}<br>
+                                {% endif %}
+                                Status: {{ ticket.status }}<br>
+                                {% if ticket.status == 'serving' %}
+                                {% if 'admin' in request.cookies or 'cashier' in request.cookies %}
+                                <form action="{{ url_for('serve_ticket', ticket_id=ticket.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-sm float-end">Mark as Done</button>
+                                </form>
+                                {% endif %}
+                                {% endif %}
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+
+                        <!-- Admin Login Link -->
+                        {% if 'admin' in request.cookies %}
+                        <a href="{{ url_for('admin_profile') }}" class="btn btn-info mt-4 w-100">Go to Admin Profile <i class="fas fa-cogs"></i></a>
+                        {% else %}
+                        <a href="{{ url_for('admin_login') }}" class="btn btn-warning mt-4 w-100">Login as Admin <i class="fas fa-sign-in-alt"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS and Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashier Dashboard</title>
+    <!-- Bootstrap 4 for styling -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 50px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .ticket-list {
+            margin-top: 20px;
+        }
+        .ticket-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .ticket-item.done {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .ticket-item .btn {
+            margin-top: 10px;
+        }
+        .ticket-item i {
+            margin-right: 10px;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .ticket-status {
+            font-weight: bold;
+        }
+        .badge-info {
+            background-color: #17a2b8;
+        }
+        .badge-success {
+            background-color: #28a745;
+        }
+        .badge-warning {
+            background-color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Cashier Dashboard</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Search bar for filtering tickets -->
+                        <div class="search-bar">
+                            <form class="form-inline" action="{{ url_for('search_tickets') }}" method="GET">
+                                <input type="text" class="form-control mr-2" name="search" placeholder="Search by Ticket ID or Customer Name">
+                                <button type="submit" class="btn btn-info">Search</button>
+                            </form>
+                        </div>
+
+                        <!-- Ticket List -->
+                        <h5>Tickets to Serve</h5>
+                        <div class="ticket-list">
+                            {% for ticket in tickets %}
+                                <div class="ticket-item {% if ticket.status == 'served' %}done{% endif %}">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>Ticket ID:</strong> {{ ticket.id }} <br>
+                                            <strong>Customer:</strong> {{ ticket.customer_name if ticket.customer_name else 'N/A' }} <br>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="badge {% if ticket.status == 'served' %}badge-success{% elif ticket.status == 'waiting' %}badge-warning{% else %}badge-info{% endif %}">
+                                                {% if ticket.status == 'served' %}Served{% elif ticket.status == 'waiting' %}Waiting{% else %}Serving{% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-2">
+                                        <strong>Status:</strong>
+                                        <span class="ticket-status">
+                                            {% if ticket.status == 'served' %}
+                                                <i class="fas fa-check-circle text-success"></i>Served
+                                            {% elif ticket.status == 'waiting' %}
+                                                <i class="fas fa-hourglass-half text-warning"></i>Waiting
+                                            {% else %}
+                                                <i class="fas fa-cogs text-info"></i>Serving
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Back Button -->
+                        <a href="{{ url_for('admin_profile') }}" class="btn btn-info mt-4">Back to Admin Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS (optional) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
