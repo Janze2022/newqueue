@@ -5,7 +5,7 @@ import datetime
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Change this to a secure key
+app.secret_key = 'Janzelyly@22'  # Change this to a secure key
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///queue_system.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
